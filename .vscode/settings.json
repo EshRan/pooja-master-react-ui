@@ -4,4 +4,21 @@
     "source.organizeImports": "explicit",
     "source.sortMembers": "explicit"
   }
+
+
+{
+  "editor.formatOnSave": true,
+  "editor.defaultFormatter": "esbenp.prettier-vscode",
+
+  "tailwindCSS.experimental.classRegex": [
+    ["tw`([^`]*)", "tw\\(([^)]*)\\)"],
+    ["className=\"([^\"]*)", "class=\"([^\"]*)"]
+  ],
+
+  "tailwindCSS.includeLanguages": {
+    "javascript": "javascript",
+    "javascriptreact": "javascript",
+    "typescriptreact": "javascript"
+  }
+}
 }
