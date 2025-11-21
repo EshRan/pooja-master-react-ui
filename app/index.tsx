@@ -13,7 +13,7 @@ export default function HomeScreen() {
       <View style={styles.overlay}>
         <TouchableOpacity 
           style={styles.tabButton}
-          onPress={() => router.push('/(tabs)/_festival_essentials')}
+          onPress={() => router.push('/_festival_essentials')}
         >
           <Text style={styles.tabText}>Festival</Text>
         </TouchableOpacity>

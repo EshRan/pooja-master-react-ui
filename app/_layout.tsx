@@ -1,23 +1,46 @@
-import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
-import { Stack } from 'expo-router';
-import { StatusBar } from 'expo-status-bar';
-import 'react-native-reanimated';
+import { useRouter } from "expo-router";
+import { Image, StyleSheet, TouchableOpacity, View } from "react-native";
 
-import { useColorScheme } from '@/hooks/use-color-scheme';
-
-export const unstable_settings = {
-  anchor: '(tabs)',
-};
-
-export default function RootLayout() {
-  const colorScheme = useColorScheme();
+export default function TabsLayout() {
+  const router = useRouter();
 
   return (
-    <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-      <Stack>
-        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-      </Stack>
-      <StatusBar style="auto" />
-    </ThemeProvider>
+    <View style={styles.container}>
+      {/* Festival Tab */}
+      <TouchableOpacity
+        style={styles.tabButton}
+        onPress={() => router.push("/tabs/_festival_essentials")}
+      >
+        <Image
+          source={require("../assets/images/homeIcons/ganesha.png")}
+          style={styles.tabImage}
+        />
+      </TouchableOpacity>
+    </View>
   );
 }
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    padding: 20,
+    backgroundColor: "#fff",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+
+  tabButton: {
+    width: "90%",
+    height: 150,
+    marginVertical: 15,
+    borderRadius: 20,
+    overflow: "hidden",
+    elevation: 4,
+  },
+
+  tabImage: {
+    width: "100%",
+    height: "100%",
+    resizeMode: "cover",
+  },
+});
