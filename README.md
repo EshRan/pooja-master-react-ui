@@ -52,10 +52,7 @@ Join our community of developers creating universal apps.
 npm install
 
 
-npm start
-
-npm run android
-
-npm fund
-
-npm audit fix
+npm start        # Start the project
+npm run android  # Run the app on Android
+npm fund         # Show packages that support funding
+npm audit fix    # Fix security issues
