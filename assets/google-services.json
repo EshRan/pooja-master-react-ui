@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "180407800066",
+    "project_id": "rituals-basket",
+    "storage_bucket": "rituals-basket.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:180407800066:android:11d0716dcbac1b31cef21b",
+        "android_client_info": {
+          "package_name": "com.rituals.basket.pooja_master_react_ui"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBAuMjrr-z86N4F9NJLqUyXlvtAgVvaQ1U"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
