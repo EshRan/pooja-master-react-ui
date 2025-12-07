@@ -11,8 +11,12 @@
     "ios": {
       "supportsTablet": true,
       "googleServicesFile": "./assets/GoogleService-Info.plist",
-      "bundleIdentifier": "com.rituals.basket.pooja-master-react-ui"
+      "bundleIdentifier": "com.rituals.basket.pooja-master-react-ui",
+      "infoPlist": {
+        "ITSAppUsesNonExemptEncryption": false
+      }
     },
+
     "android": {
       "googleServicesFile": "./assets/google-services.json",
       "adaptiveIcon": {
@@ -25,11 +29,15 @@
       "predictiveBackGestureEnabled": false,
       "package": "com.rituals.basket.pooja_master_react_ui"
     },
+
     "web": {
       "output": "static",
       "favicon": "./assets/images/favicon.png"
     },
+
     "plugins": [
+      "@react-native-firebase/app",
+      "@react-native-firebase/auth",
       "expo-router",
       [
         "expo-splash-screen",
@@ -42,12 +50,23 @@
             "backgroundColor": "#000000"
           }
         }
+      ],
+      [
+        "expo-build-properties",
+        {
+          "ios": {
+            "useFrameworks": "static",
+            "modularHeaders": true
+          }
+        }
       ]
     ],
+
     "experiments": {
       "typedRoutes": true,
       "reactCompiler": true
     },
+
     "extra": {
       "router": {},
       "eas": {

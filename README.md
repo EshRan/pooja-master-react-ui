@@ -59,3 +59,5 @@ redirecturi=http://localhost:8080/grantcode
 <a href="https://accounts.google.com/o/oauth2/v2/auth?redirect_uri=http://localhost:8080/grantcode&response_type=code&client_id=1038578625756-ssth1ro5vboh50p1flpc6q2lmdog2pbl.apps.googleusercontent.co&scope=https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fuserinfo.email+https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fuserinfo.profile+openid&access_type=offline">
   Sign in with Google
 </a>
+
+npx expo run:ios
