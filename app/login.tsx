@@ -1,99 +1,69 @@
-import auth, { FirebaseAuthTypes } from '@react-native-firebase/auth';
-import { router } from "expo-router";
-import { useEffect, useState } from 'react';
-import { Button, Image, StyleSheet, TextInput, View } from 'react-native';
+import { useRouter } from "expo-router";
+import { useState } from "react";
+import { Image, Pressable, Text, TextInput, View } from "react-native";
+import { styles } from "../styles/_styles";
 
-
-
-export default function PhoneSignIn() {
-  const [confirm, setConfirm] = useState<FirebaseAuthTypes.ConfirmationResult | null>(null);
-  const [code, setCode] = useState('');
-  const [phone, setPhone] = useState('+91');
-
-  // Monitor auth state
-  function handleAuthStateChanged(user: FirebaseAuthTypes.User | null) {
-    if (user) {
-      console.log("User logged in:", user.phoneNumber);
-      router.replace('/(tabs)');
-    }
-  }
-
-  useEffect(() => {
-    const subscriber = auth().onAuthStateChanged(handleAuthStateChanged);
-    return subscriber; // unsubscribe on unmount
-  }, []);
-
-  // Send OTP
-  async function handleSendOtp() {
-    try {
-      const confirmation = await auth().signInWithPhoneNumber(phone);// For testing purposes only
-      setConfirm(confirmation);
-      console.log("OTP sent");
-    } catch (err) {
-      console.log("Send OTP error:", err);
-    }
-  }
-
-  // Confirm OTP
-  async function confirmCode() {
-    if(!confirm) return;
-    try {
-      await confirm.confirm(code);
-      console.log('Phone number verified!');
-    } catch (error) {
-      console.log('Invalid code', error);
-    }
-  }
+export default function Login() {
+  const [number, setNumber] = useState("");
+  const router = useRouter();
 
   return (
     <View style={styles.container}>
-      <Image 
-        source={require("../assets/images/logo.png")}
-        style={styles.image}     // ✔ correct
+      <Image
+        source={require("../assets/images/logo_without_name.png")}
+        style={styles.image}
       />
-      {!confirm ? (
-        <>
+
+      <View style={styles.box}>
+        <View style={styles.phoneInputContainer}>
+          <Text style={styles.countryCode}>+91</Text>
+
           <TextInput
             style={styles.input}
-            value={phone}
-            onChangeText={setPhone}
-            placeholder="Enter phone number"
+            value={number}
+            onChangeText={setNumber}
+            placeholder="Enter your mobile number"
             keyboardType="phone-pad"
+            maxLength={10}
           />
-          <Button title="Send OTP" onPress={handleSendOtp} />
-        </>
-      ) : (
-        <>
-          <TextInput
-            style={styles.input}
-            value={code}
-            onChangeText={setCode}
-            placeholder="Enter OTP"
-            keyboardType="number-pad"
+        </View>
+
+        <Pressable
+          style={styles.continue_button}
+          onPress={() =>
+            router.push({
+            pathname: "./authentication/phoneSignIn",
+            params: { phone: `+91${number}` },
+            })
+          }
+        >
+          <Text style={styles.continue_text}>Continue</Text>
+        </Pressable>
+
+        <View style={styles.orContainer}>
+          <View style={styles.orLine} />
+          <Text style={styles.orText}>OR</Text>
+          <View style={styles.orLine} />
+        </View>
+
+        <Pressable
+          style={[styles.continue_button, styles.google_button]}
+        >
+          <Image
+            style={styles.google_icon}
+            source={require("../assets/images/google_logo.png")}
           />
-          <Button title="Confirm Code" onPress={confirmCode} />
-        </>
-      )}
+          <Text style={styles.continue_google_text}>
+            Continue with Google
+          </Text>
+        </Pressable>
+
+        <Text style={styles.termsText}>
+          By clicking continue, you agree to our{" "}
+          <Text style={styles.linkText}>Terms of Service</Text> and{" "}
+          <Text style={styles.linkText}>Privacy Policy</Text>
+        </Text>
+      </View>
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    padding: 20,
-    justifyContent: "center",
-  },
-  input: {
-    borderWidth: 1,
-    marginVertical: 10,
-    padding: 12,
-    borderRadius: 8,
-    fontSize: 16,
-  },
-   image: {
-    width: 150,
-    height: 150,
-    resizeMode: "contain",
-  },
-});

@@ -9,7 +9,7 @@ export default function Index() {
       />
     </View>
   );
-}
+}w
 
 const styles = StyleSheet.create({
   container: {
