@@ -1,7 +1,7 @@
 import auth, { FirebaseAuthTypes } from "@react-native-firebase/auth";
 import { router, useLocalSearchParams } from "expo-router";
-import { useEffect, useState } from "react";
-import { Image, Pressable, Text, TextInput, View } from "react-native";
+import { useCallback, useEffect, useState } from "react";
+import { Alert, Image, Pressable, Text, TextInput, View } from "react-native";
 import { styles } from "../../styles/_styles";
 
 export default function PhoneSignIn() {
@@ -11,31 +11,43 @@ export default function PhoneSignIn() {
     useState<FirebaseAuthTypes.ConfirmationResult | null>(null);
   const [code, setCode] = useState("");
 
+  const sendOtp = useCallback(async () => {
+    try {
+      const confirmation = await auth().signInWithPhoneNumber(phone!);
+      setConfirm(confirmation);
+      console.log("OTP sent");
+    } catch (err: any) {
+      console.log("Send OTP error:", err);
+      Alert.alert("Error", err.message || "Failed to send OTP. Please try again.");
+    }
+  }, [phone]);
+
   // 🔹 Auto-send OTP when screen opens
   useEffect(() => {
     if (phone) {
       sendOtp();
     }
-  }, [phone]);
+  }, [phone, sendOtp]);
 
-  async function sendOtp() {
-    try {
-      const confirmation = await auth().signInWithPhoneNumber(phone!);
-      setConfirm(confirmation);
-      console.log("OTP sent");
-    } catch (err) {
-      console.log("Send OTP error:", err);
-    }
-  }
+
 
   async function confirmCode() {
-    if (!confirm) return;
+    if (!confirm) {
+      Alert.alert("Error", "OTP not sent yet. Please wait or click Resend.");
+      return;
+    }
+
+    if (!code || code.length < 6) {
+      Alert.alert("Error", "Please enter a valid 6-digit OTP.");
+      return;
+    }
 
     try {
       await confirm.confirm(code);
-      router.replace("/(tabs)");
-    } catch (error) {
+      router.replace("/(tabs)/Home");
+    } catch (error: any) {
       console.log("Invalid code", error);
+      Alert.alert("Failed", "Invalid OTP. Please try again.");
     }
   }
 

@@ -1,4 +1,4 @@
-import { StyleSheet, Text, View } from 'react-native'
+import { Text, View } from 'react-native'
 
 export default function google_authentication() {
   return (
@@ -7,5 +7,3 @@ export default function google_authentication() {
     </View>
   )
 }
-
-const styles = StyleSheet.create({})

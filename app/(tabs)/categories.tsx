@@ -1,0 +1,124 @@
+
+import { festivalOccasions } from '@/data/festivalOccasions';
+import { marriageOccasions } from '@/data/marriageOccasions';
+import { Image } from 'expo-image';
+import { useRouter } from 'expo-router';
+import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+
+export default function CategoriesScreen() {
+    const router = useRouter();
+
+    const renderSection = (title: string, data: any[], type: string) => (
+        <View style={styles.section}>
+            <Text style={styles.sectionTitle}>{title}</Text>
+            <View style={styles.grid}>
+                {data.map((item, index) => (
+                    <TouchableOpacity
+                        key={index}
+                        style={styles.card}
+                        onPress={() => router.push({ pathname: "/listing/[type]", params: { type: 'occasion', id: item.id, title: item.title } } as any)}
+                    >
+                        <View style={styles.imageContainer}>
+                            <Image source={{ uri: item.image }} style={styles.image} contentFit="cover" transition={200} />
+                        </View>
+                        <Text style={styles.cardTitle}>{item.title}</Text>
+                    </TouchableOpacity>
+                ))}
+            </View>
+        </View>
+    );
+
+    return (
+        <SafeAreaView style={styles.container}>
+            <View style={styles.header}>
+                <Text style={styles.headerTitle}>All Categories</Text>
+            </View>
+            <ScrollView showsVerticalScrollIndicator={false}>
+                {renderSection('Marriage Occasions', marriageOccasions, 'marriage')}
+                {renderSection('Festival Occasions', festivalOccasions, 'festival')}
+
+                <View style={styles.section}>
+                    <Text style={styles.sectionTitle}>Individual Items</Text>
+                    <TouchableOpacity
+                        style={styles.fullWidthCard}
+                        onPress={() => router.push({ pathname: "/listing/[type]", params: { type: 'items', title: 'Pooja Essentials' } } as any)}
+                    >
+                        <Text style={styles.fullWidthCardText}>Browse All Pooja Essentials</Text>
+                    </TouchableOpacity>
+                </View>
+            </ScrollView>
+        </SafeAreaView>
+    );
+}
+
+const styles = StyleSheet.create({
+    container: {
+        flex: 1,
+        backgroundColor: '#f1f2f4',
+    },
+    header: {
+        padding: 16,
+        backgroundColor: '#fff',
+        borderBottomWidth: 1,
+        borderBottomColor: '#f0f0f0',
+    },
+    headerTitle: {
+        fontSize: 18,
+        fontWeight: 'bold',
+        color: '#212121',
+    },
+    section: {
+        backgroundColor: '#fff',
+        marginTop: 8,
+        padding: 16,
+    },
+    sectionTitle: {
+        fontSize: 16,
+        fontWeight: 'bold',
+        color: '#212121',
+        marginBottom: 16,
+    },
+    grid: {
+        flexDirection: 'row',
+        flexWrap: 'wrap',
+        justifyContent: 'space-between',
+    },
+    card: {
+        width: '31%',
+        marginBottom: 16,
+        alignItems: 'center',
+    },
+    imageContainer: {
+        width: '100%',
+        aspectRatio: 1,
+        backgroundColor: '#f9f9f9',
+        borderRadius: 8,
+        marginBottom: 8,
+        overflow: 'hidden',
+        borderWidth: 1,
+        borderColor: '#eee',
+    },
+    image: {
+        width: '100%',
+        height: '100%',
+    },
+    cardTitle: {
+        fontSize: 12,
+        textAlign: 'center',
+        color: '#555',
+    },
+    fullWidthCard: {
+        backgroundColor: '#FFF8F0',
+        padding: 16,
+        borderRadius: 8,
+        alignItems: 'center',
+        borderWidth: 1,
+        borderColor: '#D9945D',
+    },
+    fullWidthCardText: {
+        color: '#D9945D',
+        fontWeight: 'bold',
+        fontSize: 14,
+    },
+});

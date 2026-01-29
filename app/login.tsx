@@ -32,8 +32,8 @@ export default function Login() {
           style={styles.continue_button}
           onPress={() =>
             router.push({
-            pathname: "./authentication/phoneSignIn",
-            params: { phone: `+91${number}` },
+              pathname: "./authentication/phoneSignIn",
+              params: { phone: `+91${number}` },
             })
           }
         >
@@ -46,14 +46,16 @@ export default function Login() {
           <View style={styles.orLine} />
         </View>
 
+
+
         <Pressable
-          style={[styles.continue_button, styles.google_button]}
+          style={[styles.continue_button, { backgroundColor: "#FFFFFF", borderWidth: 1, borderColor: "#E5E5E5" }]}
         >
           <Image
             style={styles.google_icon}
             source={require("../assets/images/google_logo.png")}
           />
-          <Text style={styles.continue_google_text}>
+          <Text style={[styles.continue_google_text, { color: "#000000" }]}>
             Continue with Google
           </Text>
         </Pressable>
