@@ -5,7 +5,7 @@ export const styles = StyleSheet.create({
     flex: 1,
     padding: 24,
     justifyContent: "center",
-    backgroundColor: "#F7EFE6",
+    backgroundColor: "#FFF8F0", // Spiritual Cream
   },
   input: {
     borderWidth: 0,
@@ -14,7 +14,7 @@ export const styles = StyleSheet.create({
     padding: 12,
     borderRadius: 8,
     fontSize: 18,
-    backgroundColor: "FAF2EA",
+    backgroundColor: "#FFF", // White input background
   },
   phoneInputContainer: {
     flexDirection: "row",
@@ -24,7 +24,7 @@ export const styles = StyleSheet.create({
     marginVertical: 10,
     paddingHorizontal: 12,
     borderRadius: 8,
-    backgroundColor: "#FAF2EA",
+    backgroundColor: "#FFF",
   },
   countryCode: {
     fontSize: 16,
@@ -47,7 +47,7 @@ export const styles = StyleSheet.create({
   },
   continue_button: {
     marginTop: 24,
-    backgroundColor: '#D9945D',
+    backgroundColor: '#FF9933', // Spiritual Saffron
     borderRadius: 12,
     paddingVertical: 14,
     paddingHorizontal: 16,
@@ -101,7 +101,7 @@ export const styles = StyleSheet.create({
     borderWidth: 0.5,
     borderColor: "#ccc",
     borderRadius: 12,
-    backgroundColor: '#FAF2EA',
+    backgroundColor: '#FFF8F0', // Spiritual Cream
     paddingHorizontal: 24,
     marginTop: 20,
   },
@@ -116,7 +116,7 @@ export const styles = StyleSheet.create({
   },
   bufferTitle: {
     fontSize: 32,
-    color: "#D9945D",
+    color: "#FF9933", // Spiritual Saffron
     fontWeight: "bold",
     marginTop: 16,
     fontFamily: "serif",
@@ -131,7 +131,7 @@ export const styles = StyleSheet.create({
   },
   loaderText: {
     fontSize: 24,
-    color: "#D9945D",
+    color: "#FF9933", // Spiritual Saffron
     marginLeft: 5,
   }
 });

@@ -7,9 +7,9 @@ const { width } = Dimensions.get('window');
 const BANNER_HEIGHT = 180;
 
 const banners = [
-    'https://images.unsplash.com/photo-1513278974582-dc5530397529', // Diwali
-    'https://images.unsplash.com/photo-1628151015968-3a4429e9ef04', // Varalakshmi
-    'https://images.unsplash.com/photo-1630141680516-e4231b467ec6', // Ganesh
+    'https://images.unsplash.com/photo-1592843997881-cab3860b1067?w=900&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MTJ8fGRpd2FsaXxlbnwwfHwwfHx8MA%3D%3D', // Diwali
+    'https://media.istockphoto.com/id/1180528642/photo/indian-traditional-function-varalakshmi-vratam.webp?a=1&b=1&s=612x612&w=0&k=20&c=E64rFSfLyWnxVtkkpJVXWZMX8Y19HnWNxtCEMygoXoQ=', // Varalakshmi
+    'https://media.istockphoto.com/id/827608420/photo/lord-ganesha-on-hand.webp?a=1&b=1&s=612x612&w=0&k=20&c=EZYy0mMzd8sHjYDsJeZCeMn5DW2rF9rXIKBd-8A-PnU=', // Ganesh
 ];
 
 export const BannerCarousel: React.FC = () => {

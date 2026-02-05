@@ -33,8 +33,8 @@ const styles = StyleSheet.create({
         backgroundColor: '#fff',
         marginBottom: 8,
         overflow: 'hidden',
-        borderWidth: 1,
-        borderColor: '#eee',
+        borderWidth: 2,
+        borderColor: '#FFD700', // Gold Border
     },
     image: {
         width: '100%',
@@ -42,8 +42,8 @@ const styles = StyleSheet.create({
     },
     title: {
         fontSize: 12,
-        color: '#333',
+        color: '#4A3B2A', // Spiritual Brown
         textAlign: 'center',
-        fontWeight: '500',
+        fontWeight: '600',
     },
 });

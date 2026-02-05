@@ -6,12 +6,19 @@ export default function TabsLayout() {
   return (
     <Tabs screenOptions={{
       headerShown: false,
-      tabBarActiveTintColor: '#D9945D',
-      tabBarInactiveTintColor: '#999',
+      tabBarActiveTintColor: '#FF9933', // Spiritual Saffron
+      tabBarInactiveTintColor: '#8D7F71', // Muted Brown
       tabBarStyle: {
         height: 60,
         paddingBottom: 8,
         paddingTop: 8,
+        backgroundColor: '#FFF8F0', // Cream background
+        borderTopColor: '#E6D7C3',
+        elevation: 5,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: -2 },
+        shadowOpacity: 0.1,
+        shadowRadius: 4,
       }
     }}>
       <Tabs.Screen

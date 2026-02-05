@@ -19,7 +19,7 @@ export default function HomeScreen() {
       <Text style={styles.sectionTitle}>{title}</Text>
       {onSeeAll && (
         <TouchableOpacity onPress={onSeeAll} style={styles.seeAllBtn}>
-          <Ionicons name="arrow-forward-circle" size={24} color="#D9945D" />
+          <Ionicons name="arrow-forward-circle" size={24} color="#FF9933" />
         </TouchableOpacity>
       )}
     </View>
@@ -32,15 +32,15 @@ export default function HomeScreen() {
         <View style={styles.headerTop}>
           <Image source={require('@/assets/images/logo_without_name.png')} style={styles.logo} />
           <View style={styles.searchContainer}>
-            <Feather name="search" size={20} color="#666" style={{ marginRight: 8 }} />
+            <Feather name="search" size={20} color="#8D7F71" style={{ marginRight: 8 }} />
             <TextInput
               placeholder="Search for pooja kits, items..."
               style={styles.searchInput}
-              placeholderTextColor="#999"
+              placeholderTextColor="#8D7F71"
             />
           </View>
           <TouchableOpacity onPress={() => router.push('/(tabs)/cart')}>
-            <Ionicons name="cart-outline" size={28} color="#D9945D" />
+            <Ionicons name="cart-outline" size={28} color="#FF9933" />
           </TouchableOpacity>
         </View>
       </View>
@@ -118,14 +118,14 @@ export default function HomeScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f1f2f4',
+    backgroundColor: '#FFF8F0', // Spiritual Cream
   },
   header: {
-    backgroundColor: '#fff',
+    backgroundColor: '#FFF8F0', // Spiritual Cream
     paddingVertical: 12,
     paddingHorizontal: 16,
     borderBottomWidth: 1,
-    borderBottomColor: '#f0f0f0',
+    borderBottomColor: '#E6D7C3',
   },
   headerTop: {
     flexDirection: 'row',
@@ -141,7 +141,9 @@ const styles = StyleSheet.create({
     flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#f5f5f5',
+    backgroundColor: '#FFF',
+    borderWidth: 1,
+    borderColor: '#E6D7C3',
     borderRadius: 8,
     paddingHorizontal: 12,
     height: 40,
@@ -150,15 +152,16 @@ const styles = StyleSheet.create({
   searchInput: {
     flex: 1,
     fontSize: 14,
-    color: '#333',
+    color: '#4A3B2A', // Spiritual Brown
   },
   categoriesContainer: {
-    backgroundColor: '#fff',
+    backgroundColor: '#FFF8F0', // Spiritual Cream
     paddingVertical: 16,
     marginBottom: 8,
   },
   section: {
     marginBottom: 8,
+    backgroundColor: '#FFF8F0',
   },
   sectionHeader: {
     flexDirection: 'row',
@@ -170,7 +173,7 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: 18,
     fontWeight: 'bold',
-    color: '#212121',
+    color: '#800000', // Spiritual Maroon
   },
   seeAllBtn: {
     padding: 4,

@@ -1,11 +1,28 @@
 
 import { Ionicons, MaterialIcons } from '@expo/vector-icons';
+import * as ImagePicker from 'expo-image-picker';
 import { useRouter } from 'expo-router';
+import { useState } from 'react';
 import { Image, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 export default function ProfileScreen() {
   const router = useRouter();
+  const [profileImage, setProfileImage] = useState<string | null>(null);
+
+  const pickImage = async () => {
+    // No permissions request is necessary for launching the image library
+    let result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      allowsEditing: true,
+      aspect: [1, 1],
+      quality: 1,
+    });
+
+    if (!result.canceled) {
+      setProfileImage(result.assets[0].uri);
+    }
+  };
 
   const renderOption = (icon: any, title: string, subtitle?: string, onPress?: () => void) => (
     <TouchableOpacity style={styles.option} onPress={onPress}>
@@ -23,7 +40,15 @@ export default function ProfileScreen() {
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.header}>
-        <Image source={require('@/assets/images/logo_without_name.png')} style={styles.logo} />
+        <TouchableOpacity onPress={pickImage} style={styles.imageContainer}>
+          <Image
+            source={profileImage ? { uri: profileImage } : require('@/assets/images/logo_without_name.png')}
+            style={styles.logo}
+          />
+          <View style={styles.editIcon}>
+            <Ionicons name="camera" size={12} color="#fff" />
+          </View>
+        </TouchableOpacity>
         <View style={styles.userInfo}>
           <Text style={styles.welcomeText}>Hello,</Text>
           <Text style={styles.userName}>Charan Teja</Text>
@@ -34,29 +59,29 @@ export default function ProfileScreen() {
         <View style={styles.section}>
           <Text style={styles.sectionHeader}>Account Settings</Text>
           {renderOption(
-            <Ionicons name="location-outline" size={24} color="#D9945D" />,
+            <Ionicons name="location-outline" size={24} color="#FF9933" />,
             "Saved Addresses",
             "Manage your delivery addresses",
-            () => router.push('/checkout/address') // Reusing address list for now, ideally separate
+            () => router.push('/address')
           )}
           {renderOption(
-            <Ionicons name="card-outline" size={24} color="#D9945D" />,
+            <Ionicons name="card-outline" size={24} color="#FF9933" />,
             "Payment Methods",
             "Manage your saved cards and UPI",
-            () => { }
+            () => router.push('/payment')
           )}
         </View>
 
         <View style={styles.section}>
           <Text style={styles.sectionHeader}>My Activity</Text>
           {renderOption(
-            <Ionicons name="receipt-outline" size={24} color="#D9945D" />,
+            <Ionicons name="receipt-outline" size={24} color="#FF9933" />,
             "My Orders",
             "View order status and history",
             () => router.push('/(tabs)/orders')
           )}
           {renderOption(
-            <Ionicons name="heart-outline" size={24} color="#D9945D" />,
+            <Ionicons name="heart-outline" size={24} color="#FF9933" />,
             "Wishlist",
             "Your saved items",
             () => { }
@@ -66,13 +91,13 @@ export default function ProfileScreen() {
         <View style={styles.section}>
           <Text style={styles.sectionHeader}>Feedback & Information</Text>
           {renderOption(
-            <MaterialIcons name="support-agent" size={24} color="#D9945D" />,
+            <MaterialIcons name="support-agent" size={24} color="#FF9933" />,
             "Help & Support",
             "FAQs and Customer Care",
             () => { }
           )}
           {renderOption(
-            <Ionicons name="log-out-outline" size={24} color="#D9945D" />,
+            <Ionicons name="log-out-outline" size={24} color="#FF9933" />,
             "Logout",
             "",
             () => router.replace('/Login')
@@ -97,13 +122,28 @@ const styles = StyleSheet.create({
     borderBottomColor: '#f0f0f0',
   },
   logo: {
-    width: 60,
-    height: 60,
-    borderRadius: 30,
+    width: 70,
+    height: 70,
+    borderRadius: 35,
+    borderWidth: 2,
+    borderColor: '#FFD700', // Gold border
+  },
+  imageContainer: {
     marginRight: 16,
-    borderWidth: 1,
-    borderColor: '#eee',
-    resizeMode: 'contain',
+    position: 'relative',
+  },
+  editIcon: {
+    position: 'absolute',
+    bottom: 0,
+    right: 0,
+    backgroundColor: '#FF9933',
+    width: 20,
+    height: 20,
+    borderRadius: 10,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 1.5,
+    borderColor: '#fff',
   },
   userInfo: {
     justifyContent: 'center',

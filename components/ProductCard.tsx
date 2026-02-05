@@ -44,7 +44,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({ item, onPress }) => {
                 {item.rating && (
                     <View style={styles.ratingContainer}>
                         <Text style={styles.ratingText}>{item.rating}</Text>
-                        <Ionicons name="star" size={10} color="#fff" />
+                        <Ionicons name="star" size={10} color="#FFD700" />
                     </View>
                 )}
 
@@ -65,13 +65,13 @@ const styles = StyleSheet.create({
         backgroundColor: '#fff',
         borderRadius: 8,
         marginBottom: 16,
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 1 },
-        shadowOpacity: 0.1,
-        shadowRadius: 2,
-        elevation: 2,
+        shadowColor: '#DAA520', // Gold shadow
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.15,
+        shadowRadius: 4,
+        elevation: 3,
         borderWidth: 1,
-        borderColor: '#f0f0f0',
+        borderColor: '#E6D7C3', // Creamy border
     },
     imageContainer: {
         height: CARD_WIDTH,
@@ -88,7 +88,7 @@ const styles = StyleSheet.create({
         position: 'absolute',
         top: 8,
         right: 8,
-        backgroundColor: 'rgba(255,255,255,0.8)',
+        backgroundColor: 'rgba(255,255,255,0.9)',
         borderRadius: 12,
         padding: 4,
     },
@@ -97,12 +97,13 @@ const styles = StyleSheet.create({
     },
     title: {
         fontSize: 14,
-        color: '#212121',
+        color: '#4A3B2A', // Spiritual Brown
         lineHeight: 18,
         marginBottom: 4,
+        fontWeight: '500',
     },
     ratingContainer: {
-        backgroundColor: '#388E3C',
+        backgroundColor: '#800000', // Maroon background for rating
         alignSelf: 'flex-start',
         flexDirection: 'row',
         alignItems: 'center',
@@ -128,14 +129,15 @@ const styles = StyleSheet.create({
         color: '#212121',
     },
     addButton: {
-        borderColor: '#D9945D',
+        borderColor: '#FF9933',
+        backgroundColor: '#FFF8F0',
         borderWidth: 1,
         paddingHorizontal: 12,
         paddingVertical: 4,
         borderRadius: 4,
     },
     addButtonText: {
-        color: '#D9945D',
+        color: '#FF9933', // Saffron Text
         fontSize: 12,
         fontWeight: 'bold',
     },
