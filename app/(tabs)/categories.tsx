@@ -1,13 +1,36 @@
 
-import { festivalOccasions } from '@/data/festivalOccasions';
-import { marriageOccasions } from '@/data/marriageOccasions';
+import { ApiService } from '@/services/api';
+import MediaRenderer from '@/components/MediaRenderer';
 import { Image } from 'expo-image';
 import { useRouter } from 'expo-router';
+import { useEffect, useState } from 'react';
 import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 export default function CategoriesScreen() {
     const router = useRouter();
+    const [marriages, setMarriages] = useState<any[]>([]);
+    const [festivals, setFestivals] = useState<any[]>([]);
+
+    useEffect(() => {
+        fetchCategories();
+    }, []);
+
+    const fetchCategories = async () => {
+        const all = await ApiService.getOccasions();
+        const m = all.filter((o: any) => o.type === 'MARRIAGE' || o.occasionName?.toLowerCase().includes('marriage')).map((o: any) => ({
+            id: o.id.toString(),
+            title: o.occasionName,
+            image: o.imageUrl || 'https://via.placeholder.com/150'
+        }));
+        const f = all.filter((o: any) => o.type === 'FESTIVAL' || (!o.type && !o.occasionName?.toLowerCase().includes('marriage'))).map((o: any) => ({
+            id: o.id.toString(),
+            title: o.occasionName,
+            image: o.imageUrl || 'https://via.placeholder.com/150'
+        }));
+        setMarriages(m);
+        setFestivals(f);
+    };
 
     const renderSection = (title: string, data: any[], type: string) => (
         <View style={styles.section}>
@@ -35,8 +58,8 @@ export default function CategoriesScreen() {
                 <Text style={styles.headerTitle}>All Categories</Text>
             </View>
             <ScrollView showsVerticalScrollIndicator={false}>
-                {renderSection('Marriage Occasions', marriageOccasions, 'marriage')}
-                {renderSection('Festival Occasions', festivalOccasions, 'festival')}
+                {renderSection('Marriage Occasions', marriages, 'marriage')}
+                {renderSection('Festival Occasions', festivals, 'festival')}
 
                 <View style={styles.section}>
                     <Text style={styles.sectionTitle}>Individual Items</Text>

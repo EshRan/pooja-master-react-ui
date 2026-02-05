@@ -1,9 +1,9 @@
 
 import { useCart } from '@/context/CartContext';
-import { items } from '@/data/items';
-import { kits } from '@/data/kits';
+import { useCart } from '@/context/CartContext';
+import { ApiService } from '@/services/api';
 import { Ionicons } from '@expo/vector-icons';
-import { Image } from 'expo-image';
+import MediaRenderer from '@/components/MediaRenderer';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { Dimensions, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
@@ -12,21 +12,56 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 const { width } = Dimensions.get('window');
 
 export default function ProductDetailsScreen() {
-    const { id } = useLocalSearchParams();
+    const { id, type } = useLocalSearchParams();
     const router = useRouter();
     const { addToCart } = useCart();
     const [product, setProduct] = useState<any>(null);
+    const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        // Find in kits or items
-        const foundKit = kits.find(k => k.id === id);
-        if (foundKit) {
-            setProduct(foundKit);
-        } else {
-            const foundItem = items.find(i => i.id === id);
-            setProduct(foundItem);
+        fetchProductDetails();
+    }, [id, type]);
+
+    const fetchProductDetails = async () => {
+        try {
+            setLoading(true);
+            let data;
+            if (type === 'kit') {
+                data = await ApiService.getKitDetails(id as string);
+                // Transform if needed. data might be Occasion object.
+                // If it is Occasion:
+                if (data && (data.occasionName || data.type)) {
+                    data = {
+                        id: data.id.toString(),
+                        title: data.occasionName,
+                        price: data.price || 0,
+                        image: data.imageUrl,
+                        video: data.videoUrl, // Add video support
+                        description: data.description,
+                        rating: 4.8, // Mock
+                        itemsIncluded: [] // Backend doesn't give items yet, or we need another call
+                    };
+                }
+            } else {
+                data = await ApiService.getItemDetails(id as string);
+                if (data && data.itemName) {
+                    data = {
+                        id: data.id.toString(),
+                        title: data.itemName,
+                        price: data.price || data.estimatedPrice || 100,
+                        image: data.imageUrl || data.s3ImageKey,
+                        description: data.description,
+                        rating: 4.5
+                    };
+                }
+            }
+            setProduct(data);
+        } catch (e) {
+            console.error("Failed to fetch product", e);
+        } finally {
+            setLoading(false);
         }
-    }, [id]);
+    };
 
     if (!product) {
         return (
@@ -40,7 +75,13 @@ export default function ProductDetailsScreen() {
         <View style={styles.container}>
             <ScrollView bounces={false} showsVerticalScrollIndicator={false}>
                 <View style={styles.imageContainer}>
-                    <Image source={{ uri: product.image }} style={styles.image} contentFit="cover" transition={200} />
+                    <MediaRenderer
+                        imageUrl={product.image}
+                        videoUrl={product.video}
+                        style={styles.image}
+                        contentFit="cover"
+                        showWatermark={!!product.video}
+                    />
                     <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
                         <Ionicons name="arrow-back" size={24} color="#333" />
                     </TouchableOpacity>

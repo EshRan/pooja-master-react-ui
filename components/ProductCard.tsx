@@ -1,6 +1,6 @@
 
 import { Ionicons } from '@expo/vector-icons';
-import { Image } from 'expo-image';
+import MediaRenderer from './MediaRenderer'; // Import customized renderer
 import React from 'react';
 import { Dimensions, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { useCart } from '../context/CartContext';
@@ -30,7 +30,12 @@ export const ProductCard: React.FC<ProductCardProps> = ({ item, onPress }) => {
     return (
         <TouchableOpacity onPress={onPress} activeOpacity={0.9} style={styles.container}>
             <View style={styles.imageContainer}>
-                <Image source={{ uri: item.image }} style={styles.image} contentFit="cover" transition={200} />
+                {/* Use MediaRenderer to support Images and optional Videos */}
+                <MediaRenderer
+                    imageUrl={item.image}
+                    contentFit="cover"
+                    style={styles.image}
+                />
                 <TouchableOpacity style={styles.wishlistInfo}>
                     <Ionicons name="heart-outline" size={20} color="#666" />
                 </TouchableOpacity>
