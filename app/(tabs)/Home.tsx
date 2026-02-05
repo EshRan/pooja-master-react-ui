@@ -11,6 +11,8 @@ import { useRouter } from 'expo-router';
 import { FlatList, Image, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import VideoHero from '@/components/VideoHero';
+
 export default function HomeScreen() {
   const router = useRouter();
 
@@ -46,6 +48,9 @@ export default function HomeScreen() {
       </View>
 
       <ScrollView showsVerticalScrollIndicator={false}>
+        <View style={{ paddingHorizontal: 16, paddingTop: 16 }}>
+          <VideoHero />
+        </View>
         <BannerCarousel />
 
         <View style={styles.categoriesContainer}>

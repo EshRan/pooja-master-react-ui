@@ -16,7 +16,6 @@
         "ITSAppUsesNonExemptEncryption": false
       }
     },
-
     "android": {
       "googleServicesFile": "./assets/google-services.json",
       "adaptiveIcon": {
@@ -26,11 +25,9 @@
       "predictiveBackGestureEnabled": false,
       "package": "com.rituals.basket.pooja_master_react_ui"
     },
-
     "web": {
       "output": "static"
     },
-
     "plugins": [
       "@react-native-firebase/app",
       "@react-native-firebase/auth",
@@ -55,14 +52,13 @@
             "modularHeaders": true
           }
         }
-      ]
+      ],
+      "expo-video"
     ],
-
     "experiments": {
       "typedRoutes": true,
       "reactCompiler": true
     },
-
     "extra": {
       "router": {},
       "eas": {
