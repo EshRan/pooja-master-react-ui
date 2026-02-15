@@ -1,9 +1,9 @@
 
 import { Ionicons } from '@expo/vector-icons';
-import MediaRenderer from './MediaRenderer'; // Import customized renderer
 import React from 'react';
-import { Dimensions, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { Alert, Dimensions, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { useCart } from '../context/CartContext';
+import MediaRenderer from './MediaRenderer'; // Import customized renderer
 
 interface ProductCardProps {
     item: {
@@ -25,6 +25,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({ item, onPress }) => {
 
     const handleAddToCart = () => {
         addToCart({ ...item, quantity: 1 });
+        Alert.alert("Added to Cart", `${item.title} has been added to your cart.`);
     };
 
     return (

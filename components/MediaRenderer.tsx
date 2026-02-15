@@ -1,11 +1,11 @@
-import React from 'react';
-import { StyleSheet, View, Text, Platform } from 'react-native';
 import { Image, ImageStyle } from 'expo-image';
 import { useVideoPlayer, VideoView } from 'expo-video';
+import React from 'react';
+import { StyleSheet, Text, View } from 'react-native';
 
 interface MediaRendererProps {
     imageUrl?: string;
-    videoUrl?: string;
+    videoUrl?: string | number | null; // Allow require() number
     posterUrl?: string;
     style?: ImageStyle | any;
     contentFit?: 'cover' | 'contain' | 'fill';
@@ -20,10 +20,16 @@ const MediaRenderer: React.FC<MediaRendererProps> = ({
     contentFit = 'cover',
     showWatermark = false
 }) => {
-    const videoSource = videoUrl ? { uri: videoUrl } : null;
+    // Create a stable source object
+    let videoSource: any = null;
+    if (typeof videoUrl === 'string') {
+        videoSource = { uri: videoUrl };
+    } else if (typeof videoUrl === 'number') {
+        videoSource = videoUrl; // Handles require()
+    }
 
     const player = useVideoPlayer(videoSource, player => {
-        if (videoUrl) {
+        if (player) {
             player.loop = true;
             player.muted = true;
             player.play();

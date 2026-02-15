@@ -1,9 +1,8 @@
 
-import { useCart } from '@/context/CartContext';
+import MediaRenderer from '@/components/MediaRenderer';
 import { useCart } from '@/context/CartContext';
 import { ApiService } from '@/services/api';
 import { Ionicons } from '@expo/vector-icons';
-import MediaRenderer from '@/components/MediaRenderer';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { Dimensions, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';

@@ -8,9 +8,11 @@ const VIDEO_SOURCE = require('../assets/videos/hero_video.mp4');
 
 export default function VideoHero() {
     const player = useVideoPlayer(VIDEO_SOURCE, player => {
-        player.loop = true;
-        player.muted = true;
-        player.play();
+        if (player) {
+            player.loop = true;
+            player.muted = true;
+            player.play();
+        }
     });
 
     return (
