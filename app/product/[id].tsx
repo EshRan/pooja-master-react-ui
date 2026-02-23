@@ -4,6 +4,7 @@ import { DropdownOption, VariantDropdown } from '@/components/VariantDropdown';
 import { useCart } from '@/context/CartContext';
 import { ApiService } from '@/services/api';
 import { Ionicons } from '@expo/vector-icons';
+import { Image } from 'expo-image';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useEffect, useMemo, useState } from 'react';
 import { Dimensions, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
@@ -48,6 +49,40 @@ export default function ProductDetailsScreen() {
         return generateVariants(product.quantityUnit, product.basePrice || product.price);
     }, [product]);
 
+    const totalKitPrice = useMemo(() => {
+        if (product?.itemsIncluded && product.itemsIncluded.length > 0) {
+            return product.itemsIncluded.reduce((sum: number, item: any) => {
+                return sum + (item.selected ? (item.price * item.quantity) : 0);
+            }, 0);
+        }
+        return product?.price || 0;
+    }, [product]);
+
+    const toggleKitItem = (itemId: string) => {
+        setProduct((prev: any) => {
+            if (!prev || !prev.itemsIncluded) return prev;
+            return {
+                ...prev,
+                itemsIncluded: prev.itemsIncluded.map((item: any) =>
+                    item.id === itemId ? { ...item, selected: !item.selected } : item
+                )
+            };
+        });
+    };
+
+    const updateKitItemQuantity = (itemId: string, newQuantity: number) => {
+        if (newQuantity < 1) return;
+        setProduct((prev: any) => {
+            if (!prev || !prev.itemsIncluded) return prev;
+            return {
+                ...prev,
+                itemsIncluded: prev.itemsIncluded.map((item: any) =>
+                    item.id === itemId ? { ...item, quantity: newQuantity } : item
+                )
+            };
+        });
+    };
+
     useEffect(() => {
         if (variants.length > 0 && !selectedVariant) {
             setSelectedVariant(variants[0]);
@@ -67,6 +102,20 @@ export default function ProductDetailsScreen() {
                 // Transform if needed. data might be Occasion object.
                 // If it is Occasion:
                 if (data && (data.occasionName || data.type)) {
+                    const mappings = await ApiService.getAllMappings();
+                    const occasionMappings = mappings.filter((m: any) => m.occasion?.id?.toString() === id);
+                    const includedItems = occasionMappings
+                        .map((m: any) => ({
+                            id: m.poojaItem?.id?.toString() || m.poojaItem?.itemName,
+                            name: m.poojaItem?.itemName,
+                            price: m.poojaItem?.price || m.poojaItem?.estimatedPrice || 0,
+                            image: ApiService.getImageUrl(m.poojaItem?.s3ImageKey || m.poojaItem?.imageUrl) || 'https://via.placeholder.com/150',
+                            quantity: 1,
+                            quantityUnit: m.poojaItem?.quantityUnit || 'pc',
+                            selected: true
+                        }))
+                        .filter((i: any) => i.name);
+
                     data = {
                         id: data.id.toString(),
                         title: data.occasionName || data.title,
@@ -75,7 +124,7 @@ export default function ProductDetailsScreen() {
                         video: data.videoUrl, // Add video support
                         description: data.description,
                         rating: 4.8, // Mock
-                        itemsIncluded: [] // Backend doesn't give items yet, or we need another call
+                        itemsIncluded: includedItems.length > 0 ? includedItems : null
                     };
                 }
             } else {
@@ -151,7 +200,7 @@ export default function ProductDetailsScreen() {
                     )}
 
                     <Text style={styles.price}>
-                        ₹{selectedVariant ? selectedVariant.price : product.price}
+                        ₹{selectedVariant ? selectedVariant.price : (product.itemsIncluded ? totalKitPrice : product.price)}
                     </Text>
 
                     <View style={styles.divider} />
@@ -162,12 +211,45 @@ export default function ProductDetailsScreen() {
                     {product.itemsIncluded && (
                         <>
                             <View style={styles.divider} />
-                            <Text style={styles.sectionTitle}>In The Box</Text>
+                            <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
+                                <Text style={styles.sectionTitle}>In The Box</Text>
+                                <TouchableOpacity onPress={() => router.push('/listing/items?title=Pooja Items' as any)}>
+                                    <Text style={{ color: '#D9945D', fontWeight: 'bold', fontSize: 14 }}>+ Add More Items</Text>
+                                </TouchableOpacity>
+                            </View>
                             <View style={styles.itemList}>
-                                {product.itemsIncluded.map((item: string, index: number) => (
-                                    <Text key={index} style={styles.listItem}>• {item}</Text>
+                                {product.itemsIncluded.map((item: any, index: number) => (
+                                    <View key={item.id || index} style={styles.kitItemCard}>
+                                        <TouchableOpacity onPress={() => toggleKitItem(item.id)} style={{ marginRight: 10 }}>
+                                            <Ionicons name={item.selected ? 'checkbox' : 'square-outline'} size={24} color="#D9945D" />
+                                        </TouchableOpacity>
+                                        <Image source={{ uri: item.image }} style={styles.kitItemImage} />
+                                        <View style={styles.kitItemDetails}>
+                                            <Text style={styles.kitItemName} numberOfLines={2}>{item.name}</Text>
+                                            <Text style={styles.kitItemPrice}>₹{item.price} • {item.quantityUnit}</Text>
+                                        </View>
+
+                                        {item.selected && (
+                                            <View style={styles.kitItemQuantityControl}>
+                                                <TouchableOpacity style={styles.kitItemQtyBtn} onPress={() => updateKitItemQuantity(item.id, item.quantity - 1)}>
+                                                    <Text style={styles.kitItemQtyText}>-</Text>
+                                                </TouchableOpacity>
+                                                <Text style={styles.kitItemQtyValue}>{item.quantity}</Text>
+                                                <TouchableOpacity style={styles.kitItemQtyBtn} onPress={() => updateKitItemQuantity(item.id, item.quantity + 1)}>
+                                                    <Text style={styles.kitItemQtyText}>+</Text>
+                                                </TouchableOpacity>
+                                            </View>
+                                        )}
+                                    </View>
                                 ))}
                             </View>
+                            <TouchableOpacity
+                                style={styles.addMoreButton}
+                                onPress={() => router.push('/listing/items?title=Pooja Items' as any)}
+                            >
+                                <Ionicons name="add-circle-outline" size={20} color="#D9945D" />
+                                <Text style={styles.addMoreButtonText}>Add any other pooja items</Text>
+                            </TouchableOpacity>
                         </>
                     )}
                 </View>
@@ -181,9 +263,10 @@ export default function ProductDetailsScreen() {
                         const itemToAdd = {
                             ...product,
                             id: selectedVariant ? `${product.id}-${selectedVariant.value}` : product.id,
-                            price: selectedVariant ? selectedVariant.price : product.price,
+                            price: selectedVariant ? selectedVariant.price : (product.itemsIncluded ? totalKitPrice : product.price),
                             quantity: 1,
-                            variantLabel: selectedVariant ? selectedVariant.label : undefined
+                            variantLabel: selectedVariant ? selectedVariant.label : undefined,
+                            itemsIncluded: product.itemsIncluded ? product.itemsIncluded.filter((i: any) => i.selected) : undefined
                         };
                         addToCart(itemToAdd);
                         // Optional: Show toast
@@ -198,9 +281,10 @@ export default function ProductDetailsScreen() {
                         const itemToAdd = {
                             ...product,
                             id: selectedVariant ? `${product.id}-${selectedVariant.value}` : product.id,
-                            price: selectedVariant ? selectedVariant.price : product.price,
+                            price: selectedVariant ? selectedVariant.price : (product.itemsIncluded ? totalKitPrice : product.price),
                             quantity: 1,
-                            variantLabel: selectedVariant ? selectedVariant.label : undefined
+                            variantLabel: selectedVariant ? selectedVariant.label : undefined,
+                            itemsIncluded: product.itemsIncluded ? product.itemsIncluded.filter((i: any) => i.selected) : undefined
                         };
                         addToCart(itemToAdd);
                         router.push('/(tabs)/cart');
@@ -312,6 +396,79 @@ const styles = StyleSheet.create({
         color: '#555',
         marginBottom: 4,
         lineHeight: 20,
+    },
+    kitItemCard: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        backgroundColor: '#f9f9f9',
+        padding: 8,
+        borderRadius: 8,
+        marginBottom: 8,
+        borderWidth: 1,
+        borderColor: '#f0f0f0',
+    },
+    kitItemImage: {
+        width: 40,
+        height: 40,
+        borderRadius: 4,
+        marginRight: 12,
+        backgroundColor: '#fff',
+    },
+    kitItemDetails: {
+        flex: 1,
+    },
+    kitItemName: {
+        fontSize: 14,
+        fontWeight: 'bold',
+        color: '#212121',
+    },
+    kitItemPrice: {
+        fontSize: 12,
+        color: '#666',
+        marginTop: 2,
+    },
+    kitItemQuantityControl: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        backgroundColor: '#fff',
+        borderRadius: 4,
+        borderWidth: 1,
+        borderColor: '#e0e0e0',
+    },
+    kitItemQtyBtn: {
+        width: 28,
+        height: 28,
+        alignItems: 'center',
+        justifyContent: 'center',
+    },
+    kitItemQtyText: {
+        fontSize: 16,
+        fontWeight: 'bold',
+        color: '#555',
+    },
+    kitItemQtyValue: {
+        fontSize: 14,
+        fontWeight: 'bold',
+        color: '#212121',
+        paddingHorizontal: 8,
+    },
+    addMoreButton: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'center',
+        paddingVertical: 12,
+        marginTop: 8,
+        backgroundColor: '#FFF8F0',
+        borderWidth: 1,
+        borderColor: '#E6D7C3',
+        borderRadius: 8,
+        borderStyle: 'dashed',
+    },
+    addMoreButtonText: {
+        fontSize: 16,
+        fontWeight: 'bold',
+        color: '#D9945D',
+        marginLeft: 8,
     },
     footer: {
         position: 'absolute',
