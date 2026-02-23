@@ -42,8 +42,22 @@ export default function CartScreen() {
                                 <Image source={{ uri: item.image }} style={styles.itemImage} contentFit="contain" />
                             </View>
                             <View style={styles.itemDetails}>
-                                <Text style={styles.itemTitle} numberOfLines={2}>{item.title}</Text>
+                                <Text style={styles.itemTitle} numberOfLines={2}>
+                                    {item.title} {item.variantLabel ? `(${item.variantLabel})` : ''}
+                                </Text>
                                 <Text style={styles.itemPrice}>₹{item.price}</Text>
+
+                                {item.itemsIncluded && item.itemsIncluded.length > 0 && (
+                                    <View style={styles.includedItemsContainer}>
+                                        <Text style={styles.includedItemsTitle}>Includes:</Text>
+                                        {item.itemsIncluded.map((subItem: any, idx: number) => (
+                                            <Text key={idx} style={styles.includedItemText}>
+                                                • {subItem.name} x {subItem.quantity}
+                                                {subItem.isExtra ? ' (Extra)' : ''}
+                                            </Text>
+                                        ))}
+                                    </View>
+                                )}
                             </View>
                         </View>
 
@@ -244,5 +258,22 @@ const styles = StyleSheet.create({
         color: '#fff',
         fontWeight: 'bold',
         fontSize: 16,
+    },
+    includedItemsContainer: {
+        marginTop: 8,
+        backgroundColor: '#f9f9f9',
+        padding: 8,
+        borderRadius: 4,
+    },
+    includedItemsTitle: {
+        fontSize: 12,
+        fontWeight: 'bold',
+        color: '#666',
+        marginBottom: 4,
+    },
+    includedItemText: {
+        fontSize: 12,
+        color: '#555',
+        lineHeight: 18,
     },
 });

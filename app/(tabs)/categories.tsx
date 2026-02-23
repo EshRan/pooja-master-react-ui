@@ -1,6 +1,5 @@
 
 import { ApiService } from '@/services/api';
-import MediaRenderer from '@/components/MediaRenderer';
 import { Image } from 'expo-image';
 import { useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';

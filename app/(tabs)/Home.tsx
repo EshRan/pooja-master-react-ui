@@ -1,29 +1,35 @@
 import { BannerCarousel } from '@/components/BannerCarousel';
 import { CategoryTile } from '@/components/CategoryTile';
-import { ProductCard } from '@/components/ProductCard';
 import VideoHero from '@/components/VideoHero';
 import { useCart } from '@/context/CartContext';
-import { festivalOccasions as mockFestivals } from '@/data/festivalOccasions';
-import { items as mockItems } from '@/data/items';
 import { kits as mockKits } from '@/data/kits';
-import { marriageOccasions as mockMarriages } from '@/data/marriageOccasions';
+import { ApiService } from '@/services/api'; // Import ApiService
 import { Feather, Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import { useState } from 'react';
-import { FlatList, Image, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { useEffect, useState } from 'react';
+import { Image, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 export default function HomeScreen() {
   const router = useRouter();
   const { cart } = useCart();
-  // Frontend-only mode: Use mock data directly
-  const [marriageOccasions, setMarriageOccasions] = useState<any[]>(mockMarriages);
-  const [festivalOccasions, setFestivalOccasions] = useState<any[]>(mockFestivals);
-  const [kits, setKits] = useState<any[]>(mockKits);
-  const [poojaItems, setPoojaItems] = useState<any[]>(mockItems);
-  const [loading, setLoading] = useState(false);
 
-  // No fetch useEffect needed for frontend-only restoration
+  const [occasions, setOccasions] = useState<any[]>([]);
+  const [kits, setKits] = useState<any[]>(mockKits);
+
+  useEffect(() => {
+    fetchOccasions();
+  }, []);
+
+  const fetchOccasions = async () => {
+    try {
+      const data = await ApiService.getOccasions();
+      setOccasions(data);
+    } catch (error) {
+      console.error("Failed to fetch occasions", error);
+    }
+  };
+
 
   const renderSectionHeader = (title: string, onSeeAll?: () => void) => (
     <View style={styles.sectionHeader}>
@@ -84,63 +90,25 @@ export default function HomeScreen() {
 
         <View style={styles.categoriesContainer}>
           <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ paddingHorizontal: 16 }}>
-            {marriageOccasions.slice(0, 4).map((item) => (
+            {occasions.map((item) => (
               <CategoryTile
                 key={item.id}
-                title={item.title.split(' ')[0]}
-                image={item.image}
-                onPress={() => router.push({ pathname: "/listing/[type]", params: { type: 'occasion', id: item.id } } as any)}
+                title={item.occasionName || item.title}
+                image={ApiService.getImageUrl(item.s3ImageKey || item.image) || 'https://via.placeholder.com/150'} // Fallback
+                onPress={() => router.push({
+                  pathname: "/product/[id]",
+                  params: {
+                    type: 'occasion',
+                    id: item.id,
+                    title: item.occasionName, // Pass title to avoid "Godumarayi" issue
+                    price: 0, // Default price if not in occasion object
+                    image: ApiService.getImageUrl(item.s3ImageKey),
+                    description: item.description
+                  }
+                } as any)}
               />
             ))}
-            {festivalOccasions.slice(0, 4).map((item) => (
-              <CategoryTile
-                key={item.id}
-                title={item.title.split(' ')[0]}
-                image={item.image}
-                onPress={() => router.push({ pathname: "/listing/[type]", params: { type: 'occasion', id: item.id } } as any)}
-              />
-            ))}
-            <CategoryTile
-              title="View All"
-              image="https://via.placeholder.com/70?text=ALL"
-              onPress={() => router.push('/(tabs)/categories')}
-            />
           </ScrollView>
-        </View>
-
-        {/* Marriage Kits */}
-        <View style={styles.section}>
-          {renderSectionHeader("Popular Marriage Kits")}
-          <FlatList
-            data={kits} // In real app, filter by type
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            contentContainerStyle={{ paddingHorizontal: 16 }}
-            renderItem={({ item }) => (
-              <View style={{ marginRight: 16 }}>
-                <ProductCard
-                  item={item}
-                  onPress={() => router.push({ pathname: "/product/[id]", params: { id: item.id, type: 'kit' } } as any)}
-                />
-              </View>
-            )}
-            keyExtractor={(item) => item.id}
-          />
-        </View>
-
-        {/* Individual Items */}
-        <View style={styles.section}>
-          {renderSectionHeader("Essential Pooja Items")}
-          <View style={styles.grid}>
-            {poojaItems.map((item) => (
-              <View key={item.id} style={styles.gridItem}>
-                <ProductCard
-                  item={item}
-                  onPress={() => router.push({ pathname: "/product/[id]", params: { id: item.id, type: 'item' } } as any)}
-                />
-              </View>
-            ))}
-          </View>
         </View>
 
         <View style={{ height: 100 }} />

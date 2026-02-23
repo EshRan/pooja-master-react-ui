@@ -14,14 +14,14 @@ const BASE_URL = __DEV__ ? DEV_API_URL : PROD_API_URL;
 
 export const ApiService = {
   getFestivals: async () => {
-      // Assuming occasion_type='FESTIVAL' or similar filter exists, or just get all for now
-      const response = await fetch(`${BASE_URL}/occasions`); 
-      return response.json();
+    // Assuming occasion_type='FESTIVAL' or similar filter exists, or just get all for now
+    const response = await fetch(`${BASE_URL}/occasions`);
+    return response.json();
   },
-  
+
   getOccasions: async () => {
-      const response = await fetch(`${BASE_URL}/occasions`);
-      return response.json();
+    const response = await fetch(`${BASE_URL}/occasions`);
+    return response.json();
   },
 
   getPoojaItems: async () => {
@@ -38,5 +38,16 @@ export const ApiService = {
   getItemDetails: async (id: string) => {
     const response = await fetch(`${BASE_URL}/items/${id}`);
     return response.json();
+  },
+
+  getAllMappings: async () => {
+    const response = await fetch(`${BASE_URL}/mappings`);
+    return response.json();
+  },
+
+  getImageUrl: (key: string | null | undefined) => {
+    if (!key) return null;
+    if (key.startsWith('http')) return key;
+    return `https://rituals-basket.s3.ap-south-1.amazonaws.com/${key}`;
   }
 };

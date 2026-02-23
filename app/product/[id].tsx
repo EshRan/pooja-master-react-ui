@@ -1,14 +1,38 @@
 
 import MediaRenderer from '@/components/MediaRenderer';
+import { DropdownOption, VariantDropdown } from '@/components/VariantDropdown';
 import { useCart } from '@/context/CartContext';
 import { ApiService } from '@/services/api';
 import { Ionicons } from '@expo/vector-icons';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Dimensions, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 const { width } = Dimensions.get('window');
+
+const generateVariants = (unit: string = 'piece', basePrice: number): DropdownOption[] => {
+    const formattedUnit = unit.toLowerCase();
+    if (formattedUnit.includes('gm') || formattedUnit.includes('gram')) {
+        return [
+            { label: '250 gms', value: '250g', price: basePrice },
+            { label: '500 gms', value: '500g', price: basePrice * 2 },
+            { label: '1 Kg', value: '1kg', price: basePrice * 4 }
+        ];
+    } else if (formattedUnit.includes('ml') || formattedUnit.includes('liter') || formattedUnit.includes('lt')) {
+        return [
+            { label: '250 ml', value: '250ml', price: basePrice },
+            { label: '500 ml', value: '500ml', price: basePrice * 2 },
+            { label: '1 Lt', value: '1lt', price: basePrice * 4 }
+        ];
+    } else {
+        return [
+            { label: '1 Piece', value: '1pc', price: basePrice },
+            { label: '2 Pieces', value: '2pc', price: basePrice * 2 },
+            { label: '5 Pieces', value: '5pc', price: basePrice * 5 }
+        ];
+    }
+};
 
 export default function ProductDetailsScreen() {
     const { id, type } = useLocalSearchParams();
@@ -16,6 +40,19 @@ export default function ProductDetailsScreen() {
     const { addToCart } = useCart();
     const [product, setProduct] = useState<any>(null);
     const [loading, setLoading] = useState(true);
+    const [selectedVariant, setSelectedVariant] = useState<DropdownOption | null>(null);
+
+    // Using simple derived state for variants so it stays in sync with product loading
+    const variants = useMemo(() => {
+        if (!product || product.type === 'kit' || product.type === 'occasion' || product.itemsIncluded) return [];
+        return generateVariants(product.quantityUnit, product.basePrice || product.price);
+    }, [product]);
+
+    useEffect(() => {
+        if (variants.length > 0 && !selectedVariant) {
+            setSelectedVariant(variants[0]);
+        }
+    }, [variants]);
 
     useEffect(() => {
         fetchProductDetails();
@@ -25,16 +62,16 @@ export default function ProductDetailsScreen() {
         try {
             setLoading(true);
             let data;
-            if (type === 'kit') {
+            if (type === 'kit' || type === 'occasion') {
                 data = await ApiService.getKitDetails(id as string);
                 // Transform if needed. data might be Occasion object.
                 // If it is Occasion:
                 if (data && (data.occasionName || data.type)) {
                     data = {
                         id: data.id.toString(),
-                        title: data.occasionName,
+                        title: data.occasionName || data.title,
                         price: data.price || 0,
-                        image: data.imageUrl,
+                        image: ApiService.getImageUrl(data.s3ImageKey || data.imageUrl),
                         video: data.videoUrl, // Add video support
                         description: data.description,
                         rating: 4.8, // Mock
@@ -47,9 +84,12 @@ export default function ProductDetailsScreen() {
                     data = {
                         id: data.id.toString(),
                         title: data.itemName,
+                        basePrice: data.price || data.estimatedPrice || 100, // Store base price for variant calculations
                         price: data.price || data.estimatedPrice || 100,
-                        image: data.imageUrl || data.s3ImageKey,
+                        image: ApiService.getImageUrl(data.s3ImageKey || data.imageUrl),
                         description: data.description,
+                        quantityUnit: data.quantityUnit || 'piece',
+                        isInStock: data.isInStock !== false,
                         rating: 4.5
                     };
                 }
@@ -98,7 +138,21 @@ export default function ProductDetailsScreen() {
                         </View>
                     )}
 
-                    <Text style={styles.price}>₹{product.price}</Text>
+                    {!product.itemsIncluded && variants.length > 0 && selectedVariant && (
+                        <View style={{ marginTop: 12, marginBottom: 4 }}>
+                            <Text style={styles.sectionTitle}>Select Quantity</Text>
+                            <VariantDropdown
+                                options={variants}
+                                selectedValue={selectedVariant.value}
+                                onSelect={setSelectedVariant}
+                                disabled={product.isInStock === false}
+                            />
+                        </View>
+                    )}
+
+                    <Text style={styles.price}>
+                        ₹{selectedVariant ? selectedVariant.price : product.price}
+                    </Text>
 
                     <View style={styles.divider} />
 
@@ -121,18 +175,34 @@ export default function ProductDetailsScreen() {
 
             <View style={styles.footer}>
                 <TouchableOpacity
-                    style={styles.cartBtn}
+                    style={[styles.cartBtn, product.isInStock === false && { opacity: 0.5 }]}
+                    disabled={product.isInStock === false}
                     onPress={() => {
-                        addToCart({ ...product, quantity: 1 });
+                        const itemToAdd = {
+                            ...product,
+                            id: selectedVariant ? `${product.id}-${selectedVariant.value}` : product.id,
+                            price: selectedVariant ? selectedVariant.price : product.price,
+                            quantity: 1,
+                            variantLabel: selectedVariant ? selectedVariant.label : undefined
+                        };
+                        addToCart(itemToAdd);
                         // Optional: Show toast
                     }}
                 >
-                    <Text style={styles.cartBtnText}>ADD TO CART</Text>
+                    <Text style={styles.cartBtnText}>{product.isInStock === false ? 'UNAVAILABLE' : 'ADD TO CART'}</Text>
                 </TouchableOpacity>
                 <TouchableOpacity
-                    style={styles.buyBtn}
+                    style={[styles.buyBtn, product.isInStock === false && { opacity: 0.5 }]}
+                    disabled={product.isInStock === false}
                     onPress={() => {
-                        addToCart({ ...product, quantity: 1 });
+                        const itemToAdd = {
+                            ...product,
+                            id: selectedVariant ? `${product.id}-${selectedVariant.value}` : product.id,
+                            price: selectedVariant ? selectedVariant.price : product.price,
+                            quantity: 1,
+                            variantLabel: selectedVariant ? selectedVariant.label : undefined
+                        };
+                        addToCart(itemToAdd);
                         router.push('/(tabs)/cart');
                     }}
                 >

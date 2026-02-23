@@ -1,9 +1,12 @@
 
 import { Ionicons } from '@expo/vector-icons';
-import React from 'react';
+import React, { useMemo, useState } from 'react';
 import { Alert, Dimensions, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { useCart } from '../context/CartContext';
 import MediaRenderer from './MediaRenderer'; // Import customized renderer
+import { DropdownOption, VariantDropdown } from './VariantDropdown';
+
+export interface ProductVariant extends DropdownOption { }
 
 interface ProductCardProps {
     item: {
@@ -13,6 +16,8 @@ interface ProductCardProps {
         image: string;
         rating?: number;
         description?: string;
+        quantityUnit?: string;
+        isInStock?: boolean;
     };
     onPress: () => void;
 }
@@ -20,16 +25,51 @@ interface ProductCardProps {
 const { width } = Dimensions.get('window');
 const CARD_WIDTH = width / 2 - 24;
 
+const generateVariants = (unit: string = 'piece', basePrice: number): ProductVariant[] => {
+    const formattedUnit = unit.toLowerCase();
+    if (formattedUnit.includes('gm') || formattedUnit.includes('gram')) {
+        return [
+            { label: '250 gms', value: '250g', price: basePrice },
+            { label: '500 gms', value: '500g', price: basePrice * 2 },
+            { label: '1 Kg', value: '1kg', price: basePrice * 4 }
+        ];
+    } else if (formattedUnit.includes('ml') || formattedUnit.includes('liter') || formattedUnit.includes('lt')) {
+        return [
+            { label: '250 ml', value: '250ml', price: basePrice },
+            { label: '500 ml', value: '500ml', price: basePrice * 2 },
+            { label: '1 Lt', value: '1lt', price: basePrice * 4 }
+        ];
+    } else {
+        // Default to pieces
+        return [
+            { label: '1 Piece', value: '1pc', price: basePrice },
+            { label: '2 Pieces', value: '2pc', price: basePrice * 2 },
+            { label: '5 Pieces', value: '5pc', price: basePrice * 5 }
+        ];
+    }
+};
+
 export const ProductCard: React.FC<ProductCardProps> = ({ item, onPress }) => {
     const { addToCart } = useCart();
 
+    const variants = useMemo(() => generateVariants(item.quantityUnit, item.price), [item.quantityUnit, item.price]);
+    const [selectedVariant, setSelectedVariant] = useState<ProductVariant>(variants[0]);
+
     const handleAddToCart = () => {
-        addToCart({ ...item, quantity: 1 });
-        Alert.alert("Added to Cart", `${item.title} has been added to your cart.`);
+        addToCart({
+            ...item,
+            id: `${item.id}-${selectedVariant.value}`,
+            price: selectedVariant.price || item.price,
+            quantity: 1,
+            variantLabel: selectedVariant.label
+        });
+        Alert.alert("Added to Cart", `${item.title} (${selectedVariant.label}) has been added to your cart.`);
     };
 
+    const isOutOfStock = item.isInStock === false;
+
     return (
-        <TouchableOpacity onPress={onPress} activeOpacity={0.9} style={styles.container}>
+        <TouchableOpacity onPress={onPress} activeOpacity={0.9} style={[styles.container, isOutOfStock && { opacity: 0.7 }]}>
             <View style={styles.imageContainer}>
                 {/* Use MediaRenderer to support Images and optional Videos */}
                 <MediaRenderer
@@ -40,6 +80,14 @@ export const ProductCard: React.FC<ProductCardProps> = ({ item, onPress }) => {
                 <TouchableOpacity style={styles.wishlistInfo}>
                     <Ionicons name="heart-outline" size={20} color="#666" />
                 </TouchableOpacity>
+                {isOutOfStock && (
+                    <View style={{
+                        position: 'absolute', top: 0, left: 0, right: 0, bottom: 0,
+                        backgroundColor: 'rgba(255,255,255,0.6)', justifyContent: 'center', alignItems: 'center'
+                    }}>
+                        <Text style={{ color: '#D32F2F', fontWeight: 'bold' }}>Out of Stock</Text>
+                    </View>
+                )}
             </View>
 
             <View style={styles.details}>
@@ -54,10 +102,25 @@ export const ProductCard: React.FC<ProductCardProps> = ({ item, onPress }) => {
                     </View>
                 )}
 
+                <View style={{ marginBottom: 8 }}>
+                    <VariantDropdown
+                        options={variants}
+                        selectedValue={selectedVariant.value}
+                        onSelect={setSelectedVariant}
+                        disabled={isOutOfStock}
+                    />
+                </View>
+
                 <View style={styles.priceRow}>
-                    <Text style={styles.price}>₹{item.price}</Text>
-                    <TouchableOpacity onPress={handleAddToCart} style={styles.addButton}>
-                        <Text style={styles.addButtonText}>ADD</Text>
+                    <Text style={styles.price}>₹{selectedVariant.price}</Text>
+                    <TouchableOpacity
+                        onPress={handleAddToCart}
+                        style={[styles.addButton, isOutOfStock && { borderColor: '#ccc', backgroundColor: '#f0f0f0' }]}
+                        disabled={isOutOfStock}
+                    >
+                        <Text style={[styles.addButtonText, isOutOfStock && { color: '#999' }]}>
+                            {isOutOfStock ? 'UNAVAILABLE' : 'ADD'}
+                        </Text>
                     </TouchableOpacity>
                 </View>
             </View>

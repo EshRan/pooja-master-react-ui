@@ -21,58 +21,34 @@ export default function ListingScreen() {
         try {
             setLoading(true);
             if (type === 'occasion') {
-                // For now, fetching all kits (assuming kits are occasions for now or we filter occasions)
-                // If we had a direct getKits API, we'd use it.
-                // Assuming 'id' passed here is category/occasion id.
-                const allOccasions = await ApiService.getOccasions();
-                // Filter logic: match ID or Type? 
-                // If `id` is "marriage", we filter by type. If `id` is specific occasion ID, we show items IN that occasion?
-                // The previous code `kits.filter(k => k.categoryId === id)` suggests filtering kits by category.
+                const occasionId = id as string;
 
-                // Let's assume we want to show Kits (which are mapped to Occasions).
-                // We will filter occasions that match the passed `id` (if it's a category)
-                // or just show all for demo if ID logic is loose.
+                // User expects to see the actual items for this occasion!
+                const mappings = await ApiService.getAllMappings();
+                const occasionMappings = mappings.filter((m: any) => m.occasion?.id?.toString() === occasionId);
 
-                // Better: If type=occasion, we might be showing "Kits for this Occasion". 
-                // Since we don't have separate Kit entity, let's treat Occasions as Kits.
-                // We can filter by referencing the ID.
+                const items = occasionMappings.map((m: any) => ({
+                    id: m.poojaItem?.id?.toString() || m.poojaItem?.itemName,
+                    title: m.poojaItem?.itemName,
+                    price: m.poojaItem?.price || m.poojaItem?.estimatedPrice || 0,
+                    image: ApiService.getImageUrl(m.poojaItem?.s3ImageKey || m.poojaItem?.imageUrl) || 'https://via.placeholder.com/150',
+                    description: m.poojaItem?.description,
+                    quantityUnit: m.poojaItem?.quantityUnit || 'piece',
+                    isInStock: m.poojaItem?.isInStock !== false
+                })).filter((i: any) => i.title); // Filter out any empty/invalid items
 
-                // However, `Home.tsx` passes `id: item.id`.
-                const filtered = allOccasions.filter((o: any) => o.id.toString() === id || o.type === id);
-                // If empty, maybe show similar? 
-                // If we are listing "Kits", maybe we show OTHER occasions too?
-                // Let's just fetch all and filter by logic similar to previous mock.
-
-                // If previous mock `kits` had `categoryId`, and we passed `id` (e.g. 'marriage').
-                // We can search for occasions with type matching `id` (if id is 'MARRIAGE').
-
-                const res = allOccasions.filter((o: any) =>
-                    (typeof id === 'string' && o.type === id.toUpperCase()) ||
-                    o.occasionName?.toLowerCase().includes((id as string).toLowerCase()) ||
-                    o.id.toString() === id
-                ).map((o: any) => ({
-                    id: o.id.toString(),
-                    title: o.occasionName,
-                    image: o.imageUrl || 'https://via.placeholder.com/150',
-                    price: o.price || 0,
-                    description: o.description
-                }));
-                setData(res);
-
+                setData(items);
             } else if (type === 'items') {
                 const items = await ApiService.getPoojaItems();
-                // Filter? If `id` is passed?
-                // `Home.tsx` passed `pathname: "/listing/[type]", params: { type: 'occasion', id: item.id }` for categories.
-                // For "View All" (items), `Home.tsx` assumes `items` type? No, `pathname: '/(tabs)/categories'`.
-                // Wait, `ListingScreen` handles `type === 'items'`.
 
                 const pItems = items.map((i: any) => ({
                     id: i.id.toString(),
                     title: i.itemName,
                     price: i.price || i.estimatedPrice || 100,
-                    image: i.imageUrl || i.s3ImageKey || 'https://via.placeholder.com/150',
-                    rating: 4.5,
-                    description: i.description
+                    image: ApiService.getImageUrl(i.s3ImageKey || i.imageUrl || i.image) || 'https://via.placeholder.com/150',
+                    description: i.description,
+                    quantityUnit: i.quantityUnit || 'piece',
+                    isInStock: i.isInStock !== false
                 }));
                 setData(pItems);
             }
@@ -112,7 +88,18 @@ export default function ListingScreen() {
                         <View style={styles.itemWrapper}>
                             <ProductCard
                                 item={item}
-                                onPress={() => router.push({ pathname: "/product/[id]", params: { id: item.id, type: type === 'occasion' ? 'kit' : 'item' } } as any)}
+                                onPress={() => router.push({
+                                    pathname: "/product/[id]",
+                                    params: {
+                                        id: item.id,
+                                        type: 'item',
+                                        title: item.title,
+                                        price: item.price,
+                                        image: item.image,
+                                        description: item.description,
+                                        quantityUnit: item.quantityUnit
+                                    }
+                                } as any)}
                             />
                         </View>
                     )}

@@ -14,7 +14,7 @@ export default function OrdersScreen() {
       <SafeAreaView style={styles.emptyContainer}>
         <Ionicons name="receipt-outline" size={80} color="#ddd" />
         <Text style={styles.emptyTitle}>No Orders Yet</Text>
-        <Text style={styles.emptySubtitle}>Looks like you haven't placed any orders yet.</Text>
+        <Text style={styles.emptySubtitle}>Looks like you haven&apos;t placed any orders yet.</Text>
         <TouchableOpacity style={styles.shopNowButton} onPress={() => router.push('/(tabs)/Home')}>
           <Text style={styles.shopNowText}>Start Shopping</Text>
         </TouchableOpacity>
