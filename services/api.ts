@@ -1,10 +1,10 @@
 import { Platform } from 'react-native';
 
-// Use localhost for iOS simulator, 10.0.2.2 for Android emulator
+// Use EC2 IP
 const DEV_API_URL = Platform.select({
-  ios: 'http://localhost:8080/api',
-  android: 'http://10.0.2.2:8080/api',
-  default: 'http://localhost:8080/api',
+  ios: 'http://3.111.16.44:8080/api',
+  android: 'http://3.111.16.44:8080/api',
+  default: 'http://3.111.16.44:8080/api',
 });
 
 // TODO: Replace with actual production URL
