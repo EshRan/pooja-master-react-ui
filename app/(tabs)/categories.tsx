@@ -8,48 +8,57 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 export default function CategoriesScreen() {
     const router = useRouter();
-    const [marriages, setMarriages] = useState<any[]>([]);
-    const [festivals, setFestivals] = useState<any[]>([]);
+    const [occasions, setOccasions] = useState<any[]>([]);
 
     useEffect(() => {
         fetchCategories();
     }, []);
 
     const fetchCategories = async () => {
-        const all = await ApiService.getOccasions();
-        const m = all.filter((o: any) => o.type === 'MARRIAGE' || o.occasionName?.toLowerCase().includes('marriage')).map((o: any) => ({
-            id: o.id.toString(),
-            title: o.occasionName,
-            image: o.imageUrl || 'https://via.placeholder.com/150'
-        }));
-        const f = all.filter((o: any) => o.type === 'FESTIVAL' || (!o.type && !o.occasionName?.toLowerCase().includes('marriage'))).map((o: any) => ({
-            id: o.id.toString(),
-            title: o.occasionName,
-            image: o.imageUrl || 'https://via.placeholder.com/150'
-        }));
-        setMarriages(m);
-        setFestivals(f);
+        try {
+            const all = await ApiService.getOccasions();
+            // Transform all occasions with standard parameters needed by the UI
+            const formatted = all.map((o: any) => ({
+                id: o.id.toString(),
+                title: o.occasionName || o.title,
+                image: ApiService.getImageUrl(o.s3ImageKey || o.imageUrl) || 'https://via.placeholder.com/150',
+                category: o.category || 'OTHER'
+            }));
+            setOccasions(formatted);
+        } catch (error) {
+            console.error("Failed to fetch occasions for categories", error);
+        }
     };
 
-    const renderSection = (title: string, data: any[], type: string) => (
-        <View style={styles.section}>
-            <Text style={styles.sectionTitle}>{title}</Text>
-            <View style={styles.grid}>
-                {data.map((item, index) => (
-                    <TouchableOpacity
-                        key={index}
-                        style={styles.card}
-                        onPress={() => router.push({ pathname: "/listing/[type]", params: { type: 'occasion', id: item.id, title: item.title } } as any)}
-                    >
-                        <View style={styles.imageContainer}>
-                            <Image source={{ uri: item.image }} style={styles.image} contentFit="cover" transition={200} />
-                        </View>
-                        <Text style={styles.cardTitle}>{item.title}</Text>
-                    </TouchableOpacity>
-                ))}
+    const renderSection = (title: string, data: any[]) => {
+        if (!data || data.length === 0) return null;
+
+        // Capitalize first letter of category for nice display
+        const displayTitle = title.charAt(0).toUpperCase() + title.slice(1).toLowerCase() + ' Occasions';
+
+        return (
+            <View style={styles.section} key={title}>
+                <Text style={styles.sectionTitle}>{displayTitle}</Text>
+                <View style={styles.grid}>
+                    {data.map((item, index) => (
+                        <TouchableOpacity
+                            key={item.id || index}
+                            style={styles.card}
+                            onPress={() => router.push({ pathname: "/listing/[type]", params: { type: 'occasion', id: item.id, title: item.title } } as any)}
+                        >
+                            <View style={styles.imageContainer}>
+                                <Image source={{ uri: item.image }} style={styles.image} contentFit="cover" transition={200} />
+                            </View>
+                            <Text style={styles.cardTitle}>{item.title}</Text>
+                        </TouchableOpacity>
+                    ))}
+                </View>
             </View>
-        </View>
-    );
+        );
+    };
+
+    // Get unique categories handling potential undefined/null values
+    const uniqueCategories = Array.from(new Set(occasions.map(o => o.category).filter(Boolean)));
 
     return (
         <SafeAreaView style={styles.container}>
@@ -57,8 +66,10 @@ export default function CategoriesScreen() {
                 <Text style={styles.headerTitle}>All Categories</Text>
             </View>
             <ScrollView showsVerticalScrollIndicator={false}>
-                {renderSection('Marriage Occasions', marriages, 'marriage')}
-                {renderSection('Festival Occasions', festivals, 'festival')}
+                {uniqueCategories.map(category => {
+                    const categoryData = occasions.filter(o => o.category === category);
+                    return renderSection(category as string, categoryData);
+                })}
 
                 <View style={styles.section}>
                     <Text style={styles.sectionTitle}>Individual Items</Text>
