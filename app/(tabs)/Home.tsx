@@ -18,6 +18,8 @@ export default function HomeScreen() {
   const [occasions, setOccasions] = useState<any[]>([]);
   const [kits, setKits] = useState<any[]>(mockKits);
   const [nuts, setNuts] = useState<any[]>([]);
+  
+  const [selectedCategory, setSelectedCategory] = useState<string>('All');
 
   useEffect(() => {
     fetchOccasions();
@@ -112,8 +114,31 @@ export default function HomeScreen() {
         <BannerCarousel />
 
         <View style={styles.categoriesContainer}>
+          {/* Category Tabs */}
+          {occasions.length > 0 && (
+            <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={[styles.categoryTabsContainer, { paddingHorizontal: 16 }]}>
+              {['All', ...Array.from(new Set(occasions.map(o => o.category).filter(Boolean)))].map((cat: any) => (
+                <TouchableOpacity
+                  key={cat}
+                  style={[
+                    styles.categoryTab,
+                    selectedCategory === cat && styles.categoryTabActive
+                  ]}
+                  onPress={() => setSelectedCategory(cat)}
+                >
+                  <Text style={[
+                    styles.categoryTabText,
+                    selectedCategory === cat && styles.categoryTabTextActive
+                  ]}>
+                    {cat}
+                  </Text>
+                </TouchableOpacity>
+              ))}
+            </ScrollView>
+          )}
+
           <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ paddingHorizontal: 16 }}>
-            {occasions.map((item) => (
+            {occasions.filter(item => selectedCategory === 'All' || item.category === selectedCategory).map((item) => (
               <CategoryTile
                 key={item.id}
                 title={item.occasionName || item.title}
@@ -211,6 +236,31 @@ const styles = StyleSheet.create({
     backgroundColor: '#FFF8F0', // Spiritual Cream
     paddingVertical: 16,
     marginBottom: 8,
+  },
+  categoryTabsContainer: {
+    marginBottom: 16,
+    gap: 8,
+  },
+  categoryTab: {
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 20,
+    backgroundColor: '#F0E6D2', // Muted cream/gold for inactive
+    borderWidth: 1,
+    borderColor: '#E6D7C3',
+  },
+  categoryTabActive: {
+    backgroundColor: '#800000', // Spiritual Maroon for active
+    borderColor: '#800000',
+  },
+  categoryTabText: {
+    fontSize: 14,
+    color: '#8D7F71',
+    fontWeight: '500',
+  },
+  categoryTabTextActive: {
+    color: '#FFFFFF',
+    fontWeight: '600',
   },
   section: {
     marginBottom: 8,
