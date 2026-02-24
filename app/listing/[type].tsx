@@ -34,7 +34,9 @@ export default function ListingScreen() {
                     image: ApiService.getImageUrl(m.poojaItem?.s3ImageKey || m.poojaItem?.imageUrl) || 'https://via.placeholder.com/150',
                     description: m.poojaItem?.description,
                     quantityUnit: m.poojaItem?.quantityUnit || 'piece',
-                    isInStock: m.poojaItem?.isInStock !== false
+                    isInStock: m.poojaItem?.isInStock !== false,
+                    stockInQuantity: m.poojaItem?.stockInQuantity || 0,
+                    totalQuantity: m.poojaItem?.totalQuantity || 1
                 })).filter((i: any) => i.title); // Filter out any empty/invalid items
 
                 setData(items);
@@ -48,9 +50,26 @@ export default function ListingScreen() {
                     image: ApiService.getImageUrl(i.s3ImageKey || i.imageUrl || i.image) || 'https://via.placeholder.com/150',
                     description: i.description,
                     quantityUnit: i.quantityUnit || 'piece',
-                    isInStock: i.isInStock !== false
+                    isInStock: i.isInStock !== false,
+                    stockInQuantity: i.stockInQuantity || 0,
+                    totalQuantity: i.totalQuantity || 1
                 }));
                 setData(pItems);
+            } else if (type === 'nuts') {
+                const items = await ApiService.getNuts();
+
+                const nItems = items.map((i: any) => ({
+                    id: i.id.toString(),
+                    title: i.itemName,
+                    price: i.price || i.estimatedPrice || 0,
+                    image: ApiService.getImageUrl(i.s3ImageKey || i.imageUrl || i.image) || 'https://via.placeholder.com/150',
+                    description: i.description,
+                    quantityUnit: i.quantityUnit || 'piece',
+                    isInStock: i.isInStock !== false,
+                    stockInQuantity: i.stockInQuantity || 0,
+                    totalQuantity: i.totalQuantity || 1
+                }));
+                setData(nItems);
             }
         } catch (e) {
             console.error(e);
@@ -92,12 +111,13 @@ export default function ListingScreen() {
                                     pathname: "/product/[id]",
                                     params: {
                                         id: item.id,
-                                        type: 'item',
+                                        type: type === 'nuts' ? 'nut' : 'item',
                                         title: item.title,
                                         price: item.price,
                                         image: item.image,
                                         description: item.description,
-                                        quantityUnit: item.quantityUnit
+                                        quantityUnit: item.quantityUnit,
+                                        totalQuantity: item.totalQuantity
                                     }
                                 } as any)}
                             />

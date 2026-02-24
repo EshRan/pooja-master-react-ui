@@ -1,5 +1,6 @@
 import { BannerCarousel } from '@/components/BannerCarousel';
 import { CategoryTile } from '@/components/CategoryTile';
+import { ProductCard } from '@/components/ProductCard';
 import VideoHero from '@/components/VideoHero';
 import { useCart } from '@/context/CartContext';
 import { kits as mockKits } from '@/data/kits';
@@ -16,10 +17,32 @@ export default function HomeScreen() {
 
   const [occasions, setOccasions] = useState<any[]>([]);
   const [kits, setKits] = useState<any[]>(mockKits);
+  const [nuts, setNuts] = useState<any[]>([]);
 
   useEffect(() => {
     fetchOccasions();
+    fetchNuts();
   }, []);
+
+  const fetchNuts = async () => {
+    try {
+      const data = await ApiService.getNuts();
+      const formattedNuts = data.map((n: any) => ({
+        id: n.id?.toString(),
+        title: n.itemName,
+        price: n.price || n.estimatedPrice || 0,
+        image: ApiService.getImageUrl(n.s3ImageKey || n.imageUrl) || 'https://via.placeholder.com/150',
+        description: n.description,
+        quantityUnit: n.quantityUnit || 'piece',
+        isInStock: n.isInStock !== false,
+        stockInQuantity: n.stockInQuantity || 0,
+        totalQuantity: n.totalQuantity || 1
+      }));
+      setNuts(formattedNuts);
+    } catch (error) {
+      console.error("Failed to fetch nuts", error);
+    }
+  };
 
   const fetchOccasions = async () => {
     try {
@@ -110,6 +133,34 @@ export default function HomeScreen() {
             ))}
           </ScrollView>
         </View>
+
+        {nuts.length > 0 && (
+          <View style={styles.section}>
+            {renderSectionHeader("Premium Nuts", () => router.push({ pathname: '/listing/[type]', params: { type: 'nuts', title: 'Premium Nuts' } } as any))}
+            <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ paddingHorizontal: 16 }}>
+              {nuts.map((item) => (
+                <View key={item.id} style={{ marginRight: 16 }}>
+                  <ProductCard
+                    item={item}
+                    onPress={() => router.push({
+                      pathname: "/product/[id]",
+                      params: {
+                        id: item.id,
+                        type: 'nut',
+                        title: item.title,
+                        price: item.price,
+                        image: item.image,
+                        description: item.description,
+                        quantityUnit: item.quantityUnit,
+                        totalQuantity: item.totalQuantity
+                      }
+                    } as any)}
+                  />
+                </View>
+              ))}
+            </ScrollView>
+          </View>
+        )}
 
         <View style={{ height: 100 }} />
       </ScrollView>

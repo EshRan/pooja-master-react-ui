@@ -18,6 +18,8 @@ interface ProductCardProps {
         description?: string;
         quantityUnit?: string;
         isInStock?: boolean;
+        stockInQuantity?: number;
+        totalQuantity?: number;
     };
     onPress: () => void;
 }
@@ -25,34 +27,65 @@ interface ProductCardProps {
 const { width } = Dimensions.get('window');
 const CARD_WIDTH = width / 2 - 24;
 
-const generateVariants = (unit: string = 'piece', basePrice: number): ProductVariant[] => {
+const generateVariants = (unit: string = 'piece', basePrice: number, stock: number = 10, totalQuantity: number = 1): ProductVariant[] => {
     const formattedUnit = unit.toLowerCase();
-    if (formattedUnit.includes('gm') || formattedUnit.includes('gram')) {
+
+    // Capitalize unit name for display
+    const unitName = formattedUnit.charAt(0).toUpperCase() + formattedUnit.slice(1);
+
+    if (formattedUnit.includes('gm') || formattedUnit.includes('gram') || formattedUnit.includes('kg')) {
+        const isKg = formattedUnit.includes('kg');
+        const quantityInGrams = (totalQuantity > 0 ? totalQuantity : 1) * (isKg ? 1000 : 1);
+        const perGramPrice = basePrice / quantityInGrams;
         return [
-            { label: '250 gms', value: '250g', price: basePrice },
-            { label: '500 gms', value: '500g', price: basePrice * 2 },
-            { label: '1 Kg', value: '1kg', price: basePrice * 4 }
+            { label: '250 gms', value: '250g', price: Math.round(perGramPrice * 250) },
+            { label: '500 gms', value: '500g', price: Math.round(perGramPrice * 500) },
+            { label: '1 Kg', value: '1kg', price: Math.round(perGramPrice * 1000) }
         ];
     } else if (formattedUnit.includes('ml') || formattedUnit.includes('liter') || formattedUnit.includes('lt')) {
+        const isLiter = formattedUnit.includes('liter') || formattedUnit.includes('lt');
+        const quantityInMl = (totalQuantity > 0 ? totalQuantity : 1) * (isLiter ? 1000 : 1);
+        const perMlPrice = basePrice / quantityInMl;
         return [
-            { label: '250 ml', value: '250ml', price: basePrice },
-            { label: '500 ml', value: '500ml', price: basePrice * 2 },
-            { label: '1 Lt', value: '1lt', price: basePrice * 4 }
+            { label: '250 ml', value: '250ml', price: Math.round(perMlPrice * 250) },
+            { label: '500 ml', value: '500ml', price: Math.round(perMlPrice * 500) },
+            { label: '1 Lt', value: '1lt', price: Math.round(perMlPrice * 1000) }
         ];
     } else {
-        // Default to pieces
-        return [
-            { label: '1 Piece', value: '1pc', price: basePrice },
-            { label: '2 Pieces', value: '2pc', price: basePrice * 2 },
-            { label: '5 Pieces', value: '5pc', price: basePrice * 5 }
-        ];
+        // Dynamic based on piece/packet/dozen etc.
+        const variants: ProductVariant[] = [];
+
+        // Define realistic thresholds
+        const thresholds = [1, 2, 5, 10, 20];
+        const unitPrice = basePrice / (totalQuantity > 0 ? totalQuantity : 1);
+
+        for (const qty of thresholds) {
+            if (qty <= stock || qty === 1) { // Always show at least 1 option if in stock
+                variants.push({
+                    label: `${qty} ${qty > 1 ? (unitName.endsWith('s') ? unitName : unitName + 's') : unitName}`,
+                    value: `${qty}${formattedUnit}`,
+                    price: Math.round(unitPrice * qty)
+                });
+            }
+        }
+
+        // Ensure at least one variant is returned if stock is 0 but it wasn't flagged out of stock
+        if (variants.length === 0) {
+            variants.push({
+                label: `1 ${unitName}`,
+                value: `1${formattedUnit}`,
+                price: Math.round(unitPrice)
+            });
+        }
+
+        return variants;
     }
 };
 
 export const ProductCard: React.FC<ProductCardProps> = ({ item, onPress }) => {
     const { addToCart } = useCart();
 
-    const variants = useMemo(() => generateVariants(item.quantityUnit, item.price), [item.quantityUnit, item.price]);
+    const variants = useMemo(() => generateVariants(item.quantityUnit, item.price, item.stockInQuantity, item.totalQuantity), [item.quantityUnit, item.price, item.stockInQuantity, item.totalQuantity]);
     const [selectedVariant, setSelectedVariant] = useState<ProductVariant>(variants[0]);
 
     const handleAddToCart = () => {

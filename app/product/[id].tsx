@@ -12,26 +12,54 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 const { width } = Dimensions.get('window');
 
-const generateVariants = (unit: string = 'piece', basePrice: number): DropdownOption[] => {
+const generateVariants = (unit: string = 'piece', basePrice: number, stock: number = 10, totalQuantity: number = 1): DropdownOption[] => {
     const formattedUnit = unit.toLowerCase();
-    if (formattedUnit.includes('gm') || formattedUnit.includes('gram')) {
+
+    // Capitalize unit name for display
+    const unitName = formattedUnit.charAt(0).toUpperCase() + formattedUnit.slice(1);
+
+    if (formattedUnit.includes('gm') || formattedUnit.includes('gram') || formattedUnit.includes('kg')) {
+        const isKg = formattedUnit.includes('kg');
+        const quantityInGrams = (totalQuantity > 0 ? totalQuantity : 1) * (isKg ? 1000 : 1);
+        const perGramPrice = basePrice / quantityInGrams;
         return [
-            { label: '250 gms', value: '250g', price: basePrice },
-            { label: '500 gms', value: '500g', price: basePrice * 2 },
-            { label: '1 Kg', value: '1kg', price: basePrice * 4 }
+            { label: '250 gms', value: '250g', price: Math.round(perGramPrice * 250) },
+            { label: '500 gms', value: '500g', price: Math.round(perGramPrice * 500) },
+            { label: '1 Kg', value: '1kg', price: Math.round(perGramPrice * 1000) }
         ];
     } else if (formattedUnit.includes('ml') || formattedUnit.includes('liter') || formattedUnit.includes('lt')) {
+        const isLiter = formattedUnit.includes('liter') || formattedUnit.includes('lt');
+        const quantityInMl = (totalQuantity > 0 ? totalQuantity : 1) * (isLiter ? 1000 : 1);
+        const perMlPrice = basePrice / quantityInMl;
         return [
-            { label: '250 ml', value: '250ml', price: basePrice },
-            { label: '500 ml', value: '500ml', price: basePrice * 2 },
-            { label: '1 Lt', value: '1lt', price: basePrice * 4 }
+            { label: '250 ml', value: '250ml', price: Math.round(perMlPrice * 250) },
+            { label: '500 ml', value: '500ml', price: Math.round(perMlPrice * 500) },
+            { label: '1 Lt', value: '1lt', price: Math.round(perMlPrice * 1000) }
         ];
     } else {
-        return [
-            { label: '1 Piece', value: '1pc', price: basePrice },
-            { label: '2 Pieces', value: '2pc', price: basePrice * 2 },
-            { label: '5 Pieces', value: '5pc', price: basePrice * 5 }
-        ];
+        const variants: DropdownOption[] = [];
+        const thresholds = [1, 2, 5, 10, 20];
+        const unitPrice = basePrice / (totalQuantity > 0 ? totalQuantity : 1);
+
+        for (const qty of thresholds) {
+            if (qty <= stock || qty === 1) { // Always show at least 1 option if in stock
+                variants.push({
+                    label: `${qty} ${qty > 1 ? (unitName.endsWith('s') ? unitName : unitName + 's') : unitName}`,
+                    value: `${qty}${formattedUnit}`,
+                    price: Math.round(unitPrice * qty)
+                });
+            }
+        }
+
+        if (variants.length === 0) {
+            variants.push({
+                label: `1 ${unitName}`,
+                value: `1${formattedUnit}`,
+                price: Math.round(unitPrice)
+            });
+        }
+
+        return variants;
     }
 };
 
@@ -46,7 +74,7 @@ export default function ProductDetailsScreen() {
     // Using simple derived state for variants so it stays in sync with product loading
     const variants = useMemo(() => {
         if (!product || product.type === 'kit' || product.type === 'occasion' || product.itemsIncluded) return [];
-        return generateVariants(product.quantityUnit, product.basePrice || product.price);
+        return generateVariants(product.quantityUnit, product.basePrice || product.price, product.stockInQuantity, product.totalQuantity);
     }, [product]);
 
     const totalKitPrice = useMemo(() => {
@@ -127,6 +155,23 @@ export default function ProductDetailsScreen() {
                         itemsIncluded: includedItems.length > 0 ? includedItems : null
                     };
                 }
+            } else if (type === 'nut') {
+                data = await ApiService.getNutDetails(id as string);
+                if (data && data.itemName) {
+                    data = {
+                        id: data.id.toString(),
+                        title: data.itemName,
+                        basePrice: data.price || data.estimatedPrice || 100, // Store base price for variant calculations
+                        price: data.price || data.estimatedPrice || 100,
+                        image: ApiService.getImageUrl(data.s3ImageKey || data.imageUrl),
+                        description: data.description,
+                        quantityUnit: data.quantityUnit || 'piece',
+                        isInStock: data.isInStock !== false,
+                        stockInQuantity: data.stockInQuantity || 0,
+                        totalQuantity: data.totalQuantity || 1,
+                        rating: 4.5
+                    };
+                }
             } else {
                 data = await ApiService.getItemDetails(id as string);
                 if (data && data.itemName) {
@@ -139,6 +184,7 @@ export default function ProductDetailsScreen() {
                         description: data.description,
                         quantityUnit: data.quantityUnit || 'piece',
                         isInStock: data.isInStock !== false,
+                        stockInQuantity: data.stockInQuantity || 0,
                         rating: 4.5
                     };
                 }

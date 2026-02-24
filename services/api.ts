@@ -29,6 +29,11 @@ export const ApiService = {
     return response.json();
   },
 
+  getNuts: async () => {
+    const response = await fetch(`${BASE_URL}/nuts`);
+    return response.json();
+  },
+
   getKitDetails: async (id: string) => {
     // If backend doesn't have a separate kit endpoint, we might fetch occasion which acts as a kit
     const response = await fetch(`${BASE_URL}/occasions/${id}`);
@@ -37,6 +42,11 @@ export const ApiService = {
 
   getItemDetails: async (id: string) => {
     const response = await fetch(`${BASE_URL}/items/${id}`);
+    return response.json();
+  },
+
+  getNutDetails: async (id: string) => {
+    const response = await fetch(`${BASE_URL}/nuts/${id}`);
     return response.json();
   },
 
