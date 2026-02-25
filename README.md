@@ -69,3 +69,4 @@ eas build -p android --profile preview
 ##for local android apk
 eas build -p android --profile preview --local
 
+npx expo run:android --variant release
