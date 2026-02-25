@@ -61,3 +61,11 @@ redirecturi=http://localhost:8080/grantcode
 </a>
 
 npx expo run:ios
+
+##for android apk
+eas build -p android --profile preview
+
+
+##for local android apk
+eas build -p android --profile preview --local
+

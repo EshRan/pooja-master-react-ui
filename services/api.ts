@@ -8,7 +8,7 @@ const DEV_API_URL = Platform.select({
 });
 
 // TODO: Replace with actual production URL
-const PROD_API_URL = 'https://api.poojamaster.com/api';
+const PROD_API_URL = 'http://3.111.16.44:8080/api';
 
 const BASE_URL = __DEV__ ? DEV_API_URL : PROD_API_URL;
 

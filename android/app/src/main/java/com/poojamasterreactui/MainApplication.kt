@@ -1,4 +1,4 @@
-package com.rituals.basket.pooja_master_react_ui
+package com.poojamasterreactui
 
 import android.app.Application
 import android.content.res.Configuration

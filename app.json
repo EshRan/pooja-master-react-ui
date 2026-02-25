@@ -50,6 +50,9 @@
           "ios": {
             "useFrameworks": "static",
             "modularHeaders": true
+          },
+          "android": {
+            "usesCleartextTraffic": true
           }
         }
       ],
